@@ -1,8 +1,27 @@
 import axios from "axios";
 
-async function makeApiCall(url) {
+import {
+  words,
+  BASE_URL,
+  POSTGRES_URL,
+  POSTGRES_URL_FREQUENCY,
+  POSTGRES_URL_CONTEXT_DEPENDENT_RANK,
+  POSTGRES_URL_EXTRA,
+  ELASTIC_URL,
+} from "./consts.js";
+
+import {
+  calculateMedian,
+  calculateMode,
+  calculateStandardDeviation,
+  createWorker,
+  getMinMaxAvg,
+} from "./utils.js";
+
+async function getAPICallTimeDelta(url) {
+  const ramdomIndex = Math.floor(Math.random() * 10);
   const params = {
-    text: "coffee",
+    text: words[ramdomIndex],
   };
   let start = 0;
   let end = 0;
@@ -16,39 +35,58 @@ async function makeApiCall(url) {
   return end - start;
 }
 
-const BASE_URL = "http://localhost:8080/search";
-
-const POSTGRES_URL = "/postgres/fts/indexed-text";
-const POSTGRES_URL_FREQUENCY = "/postgres/fts/indexed-text/frequency-rank";
-const POSTGRES_URL3 = "/postgres/fts/indexed-text/context-dependent-rank";
-const POSTGRES_URL_EXTRA = "/postgres/contains/text";
-
-const ELASTIC_URL = "/es/fts/indexed-text";
-
-async function executeRequests(ite) {
+async function executeRequests(url, iterations) {
   let arr = [];
-  for (let index = 0; index < ite; index++) {
-    arr.push(await makeApiCall(BASE_URL + POSTGRES_URL_FREQUENCY));
+  for (let index = 0; index < iterations; index++) {
+    arr.push(await getAPICallTimeDelta(url));
   }
   return arr;
 }
 
-const results = await executeRequests(5);
-console.log(results);
+async function sendMultipleRequests(url, requestsNumber) {
+  const endpoint = url;
+  const numberOfRequests = requestsNumber;
 
-function getMinMaxAvg(arr) {
-  if (arr.length === 0) {
-    return { min: null, max: null, avg: null };
+  const workers = Array.from({ length: numberOfRequests }, () => {
+    const ramdomIndex = Math.floor(Math.random() * 10);
+    const params = {
+      text: words[ramdomIndex],
+    };
+    return createWorker(endpoint, params);
+  });
+
+  try {
+    const results = await Promise.all(workers);
+    return results;
+  } catch (error) {
+    console.error("Erro ao enviar requisições:", error);
   }
-
-  const min = Math.min(...arr);
-  const max = Math.max(...arr);
-
-  const sum = arr.reduce((acc, val) => acc + val, 0);
-  const avg = sum / arr.length;
-
-  return { min, max, avg };
 }
+
+// const results = await executeRequests(BASE_URL + POSTGRES_URL, 100);
+// const results = await executeRequests(BASE_URL + POSTGRES_URL_FREQUENCY, 100);
+// const results = await executeRequests(BASE_URL + POSTGRES_URL_CONTEXT_DEPENDENT_RANK, 100);
+// const results = await executeRequests(BASE_URL + ELASTIC_URL, 100);
+// const results = await executeRequests(BASE_URL + POSTGRES_URL_EXTRA, 100);
+
+// const results = await sendMultipleRequests(BASE_URL + POSTGRES_URL, 100);
+// const results = await sendMultipleRequests(
+//   BASE_URL + POSTGRES_URL_FREQUENCY,
+//   100
+// );
+// const results = await sendMultipleRequests(
+//   BASE_URL + POSTGRES_URL_CONTEXT_DEPENDENT_RANK,
+//   100
+// );
+// const results = await sendMultipleRequests(BASE_URL + ELASTIC_URL);
+const results = await sendMultipleRequests(BASE_URL + POSTGRES_URL_EXTRA, 100);
+
 const { min, max, avg } = getMinMaxAvg(results);
+const { median1, median2 } = calculateMedian(results);
+const { values, frequency } = calculateMode(results);
+const { standardDeviation } = calculateStandardDeviation(results);
 
 console.log("mínimo = ", min, " máximo = ", max, " média = ", avg);
+console.log("Mediana => mediana 1 = ", median1, " mediana 2 = ", median2);
+console.log("Moda => valores = ", values, " frequência = ", frequency);
+console.log("Desvio padrão = ", standardDeviation);
