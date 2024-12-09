@@ -1,4 +1,5 @@
-# tcc
+# TCC
+Equipe: Andre Argolo, Felipe Augusto, Gabriel Pedreira, Kevin Vasques Santos.
 
 Estrutura do projeto:
 
