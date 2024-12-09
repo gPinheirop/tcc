@@ -15,7 +15,7 @@ import {
   calculateMode,
   calculateStandardDeviation,
   createWorker,
-  getMinMaxAvg,
+  getMinMaxAvgTotal,
 } from "./utils.js";
 
 async function getAPICallTimeDelta(url) {
@@ -78,15 +78,26 @@ async function sendMultipleRequests(url, requestsNumber) {
 //   BASE_URL + POSTGRES_URL_CONTEXT_DEPENDENT_RANK,
 //   100
 // );
-// const results = await sendMultipleRequests(BASE_URL + ELASTIC_URL);
+// const results = await sendMultipleRequests(BASE_URL + ELASTIC_URL, 100);
 const results = await sendMultipleRequests(BASE_URL + POSTGRES_URL_EXTRA, 100);
 
-const { min, max, avg } = getMinMaxAvg(results);
+const { minimum, maximum, average, total } = getMinMaxAvgTotal(results);
 const { median1, median2 } = calculateMedian(results);
 const { values, frequency } = calculateMode(results);
 const { standardDeviation } = calculateStandardDeviation(results);
 
-console.log("mínimo = ", min, " máximo = ", max, " média = ", avg);
+console.log(results);
+
+console.log(
+  "mínimo = ",
+  minimum,
+  " máximo = ",
+  maximum,
+  " média = ",
+  average,
+  "total = ",
+  total
+);
 console.log("Mediana => mediana 1 = ", median1, " mediana 2 = ", median2);
 console.log("Moda => valores = ", values, " frequência = ", frequency);
 console.log("Desvio padrão = ", standardDeviation);

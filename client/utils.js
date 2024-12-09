@@ -1,30 +1,30 @@
 import { Worker } from "worker_threads";
 
-export function getMinMaxAvg(arr) {
-  if (arr.length === 0) {
+export function getMinMaxAvgTotal(values) {
+  if (values.length === 0) {
     return { min: null, max: null, avg: null };
   }
 
-  const min = Math.min(...arr);
-  const max = Math.max(...arr);
+  const minimum = Math.min(...values);
+  const maximum = Math.max(...values);
 
-  const sum = arr.reduce((acc, val) => acc + val, 0);
-  const avg = sum / arr.length;
+  const total = values.reduce((acc, val) => acc + val, 0);
+  const average = total / values.length;
 
-  return { min, max, avg };
+  return { minimum, maximum, average, total };
 }
 
-export function calculateMode(array) {
+export function calculateMode(values) {
   const frequency = {};
 
-  array.forEach((value) => {
+  values.forEach((value) => {
     frequency[value] = (frequency[value] || 0) + 1;
   });
 
   const highestFrequency = Math.max(...Object.values(frequency));
 
   const modes = Object.keys(frequency)
-    .filter((valor) => frequency[valor] === highestFrequency)
+    .filter((value) => frequency[value] === highestFrequency)
     .map(Number);
 
   return {

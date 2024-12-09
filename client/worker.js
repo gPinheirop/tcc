@@ -17,4 +17,4 @@ async function makeRequest(url, params) {
 
 makeRequest(url, params)
   .then((duration) => parentPort.postMessage(duration))
-  .catch((duration) => parentPort.postMessage(duration)); erro
+  .catch((duration) => parentPort.postMessage(duration));
